@@ -182,13 +182,58 @@ creation_rules:
 
 ---
 
-## Roadmap
+## TODO
 
-- [ ] Add OpenTelemetry tracing to DB layer via `otelgorm`
-- [ ] Propagate trace context through controller → repository
-- [ ] Add trace ID to Loki log entries for trace-log correlation
-- [ ] Add full observability stack to `docker-compose.yaml` (Loki, Prometheus, Grafana, Tempo)
-- [ ] Add External Secrets operator integration for k8s secret management
+### 🔴 High Priority
+
+- [ ] **Add OpenTelemetry tracing** — repo is called `otel-demo` but has no `initTracerProvider`, spans, or `otelgin` middleware
+  ```go
+  // go get go.opentelemetry.io/contrib/instrumentation/github.com/gin-gonic/gin/otelgin
+  r.Use(otelgin.Middleware("note-app"))
+  ```
+- [ ] **Propagate `ctx`** from Gin handler → controller → repository so DB spans are nested under HTTP spans
+- [ ] **Add `otelgorm` plugin** for automatic DB query tracing
+  ```go
+  db.Use(otelgorm.NewPlugin())
+  ```
+- [ ] **Make `loki.go` Fire() async** — currently blocks the request path if Loki is slow or unavailable
+  ```go
+  func (h *LokiHook) Fire(entry *logrus.Entry) error {
+      go func() { /* push logic */ }()
+      return nil
+  }
+  ```
+
+---
+
+### 🟡 Medium Priority
+
+- [ ] **Add trace ID + span ID to Loki log entries** for trace-log correlation in Grafana
+- [ ] **Add `level` label to Loki streams** so logs can be filtered by severity in Grafana
+- [ ] **Add full observability stack to `docker-compose.yaml`** — Loki, Prometheus, Grafana, Tempo are missing
+- [ ] **Add DB healthcheck in `docker-compose.yaml`** so app waits for Postgres to be ready
+  ```yaml
+  healthcheck:
+    test: ["CMD-SHELL", "pg_isready -U postgres"]
+  ```
+- [ ] **Remove mixed `log` and `logrus` usage** — standardize on `logrus` throughout `main.go`
+- [ ] **Add `.env.example`** — currently there is no reference file for required environment variables
+- [ ] **Add `activeRequests` gauge metric** — exists in the simple demo but missing in note-app
+
+---
+
+### 🟢 Low Priority / Nice to Have
+
+- [ ] **Add SOPS + `.sops.yaml`** setup for encrypted secret management (see Secrets section)
+- [ ] **Add External Secrets manifest** for Kubernetes secret management via AWS SSM
+- [ ] **Add Grafana dashboard JSON** for the Prometheus metrics already instrumented
+- [ ] **Add sampling configuration** via `OTEL_TRACES_SAMPLER` env var for production use
+  ```bash
+  OTEL_TRACES_SAMPLER=parentbased_traceidratio
+  OTEL_TRACES_SAMPLER_ARG=0.1
+  ```
+- [ ] **Write `prometheus.yml` scrape config** for local docker-compose usage
+- [ ] **Add GitHub Actions CI workflow** for build + docker push on merge to main
 
 ---
 
