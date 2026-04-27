@@ -1,0 +1,59 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Go Note App</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <style>
+        body { background-color: #f4f7f6; }
+        .note-card { transition: transform 0.2s; border: none; border-radius: 10px; }
+        .note-card:hover { transform: translateY(-5px); }
+    </style>
+</head>
+<body class="container py-5">
+    <div class="row justify-content-center">
+        <div class="col-md-8">
+            <h1 class="text-center mb-4">📝 My Quick Notes</h1>
+            
+            <div class="card shadow-sm mb-5">
+                <div class="card-body">
+                    <h5 class="card-title">New Note</h5>
+                    <form action="/notes" method="POST">
+                        <div class="mb-3">
+                            <textarea name="content" class="form-control" rows="3" placeholder="Write your thoughts..." required></textarea>
+                        </div>
+                        <button type="submit" class="btn btn-primary w-100">Save Note</button>
+                    </form>
+                </div>
+            </div>
+
+            <div class="row">
+                {{range .notes}}
+                <div class="col-md-12 mb-3">
+                    <div class="card note-card shadow-sm">
+                        <div class="card-body">
+                            <div class="d-flex justify-content-between align-items-start">
+                                <div>
+                                    <p class="card-text mb-1">{{.Content}}</p>
+                                    <small class="text-secondary" style="font-size: 0.75rem;">
+                                        Created: {{.CreatedAt.Format "Jan 02, 2006 15:04"}}
+                                    </small>
+                                </div>
+                                <form action="/notes/delete/{{.ID}}" method="POST" onsubmit="return confirm('Delete this note?')">
+                                    <button type="submit" class="btn-close" aria-label="Close"></button>
+                                </form>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                {{else}}
+                <div class="text-center py-5">
+                    <p class="text-muted italic">No notes found. Start by adding one above!</p>
+                </div>
+                {{end}}
+            </div>
+        </div>
+    </div>
+</body>
+</html>

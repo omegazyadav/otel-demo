@@ -1,0 +1,87 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: otel-collector-config
+data:
+  otel-collector-config.yaml: |
+    receivers:
+      otlp:
+        protocols:
+          grpc:
+            endpoint: 0.0.0.0:4317
+          http:
+            endpoint: 0.0.0.0:4318
+      prometheus:
+        config:
+          scrape_configs:
+            - job_name: 'otel-demo'
+              scrape_interval: 5s
+              static_configs:
+                - targets: ['otel-demo:8080']
+
+    exporters:
+      prometheus:
+        endpoint: "0.0.0.0:8081"
+      # Ensure the debug exporter is here to catch the traces
+      debug:
+        verbosity: detailed
+
+    service:
+      pipelines:
+        metrics:
+          receivers: [prometheus, otlp]
+          exporters: [prometheus]
+        # The new pipeline to catch your Go app's trace data
+        traces:
+          receivers: [otlp]
+          exporters: [debug]
+
+
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: otel-collector
+  labels:
+    app: otel-collector
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: otel-collector
+  template:
+    metadata:
+      labels:
+        app: otel-collector
+    spec:
+      containers:
+        - name: otel-collector
+          image: otel/opentelemetry-collector:latest
+          ports:
+            - containerPort: 8081 # prometheus
+          args:
+            - "--config=/etc/otel-collector-config.yaml"
+          volumeMounts:
+            - name: otel-config
+              mountPath: /etc/otel-collector-config.yaml
+              subPath: otel-collector-config.yaml
+      volumes:
+        - name: otel-config
+          configMap:
+            name: otel-collector-config
+
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: otel-collector
+spec:
+  selector:
+    app: otel-collector
+  ports:
+    - name: prome-exporter
+      protocol: TCP
+      port: 8081
+      targetPort: 8081
+  type: ClusterIP
+
