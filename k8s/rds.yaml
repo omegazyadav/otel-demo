@@ -19,7 +19,10 @@ spec:
         - name: POSTGRES_USER
           value: "user"
         - name: POSTGRES_PASSWORD
-          value: "password"
+          valueFrom:
+            secretKeyRef:
+              name: otel-db-secrets
+              key: DB_PASSWORD
         - name: POSTGRES_DB
           value: "notesdb"
         # Ensure Postgres looks for data in the mounted volume
