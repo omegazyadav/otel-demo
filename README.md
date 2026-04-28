@@ -217,7 +217,7 @@ creation_rules:
     test: ["CMD-SHELL", "pg_isready -U postgres"]
   ```
 - [ ] **Remove mixed `log` and `logrus` usage** — standardize on `logrus` throughout `main.go`
-- [ ] **Add `.env.example`** — currently there is no reference file for required environment variables
+- [x] **Add `.env.example`** — currently there is no reference file for required environment variables
 - [ ] **Add `activeRequests` gauge metric** — exists in the simple demo but missing in note-app
 
 ---
