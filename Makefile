@@ -18,12 +18,7 @@ run: build
 # Build the Docker image
 docker-build:
 	@echo "Building the Docker image..."
-	docker build -t $(DOCKER_IMAGE):$(DOCKER_TAG) .
-
-# Push the Docker image to Docker Hub
-docker-push: docker-build
-	@echo "Pushing $(DOCKER_IMAGE):$(DOCKER_TAG) to Docker Hub..."
-	docker push $(DOCKER_IMAGE):$(DOCKER_TAG)
+	docker buildx build --platform linux/amd64,linux/arm64 -t  $(DOCKER_IMAGE):$(DOCKER_TAG) --push .
 
 # Run the Docker container
 docker-run: docker-build
