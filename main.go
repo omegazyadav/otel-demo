@@ -12,7 +12,7 @@ import (
     "github.com/gin-gonic/gin"
     "github.com/prometheus/client_golang/prometheus"
     "github.com/prometheus/client_golang/prometheus/promhttp"
-    "github.com/sirupsen/logrus"       // add this
+    "github.com/sirupsen/logrus"
     "gorm.io/driver/postgres"
     "gorm.io/gorm"
 )
@@ -33,12 +33,16 @@ var (
         },
         []string{"method", "path"},
     )
-    logger = logrus.New()   // add this
+    logger = logrus.New()
 )
 
 func init() {
     prometheus.MustRegister(httpRequestsTotal)
     prometheus.MustRegister(httpRequestDuration)
+
+    // Unregister Go runtime metrics
+    prometheus.Unregister(prometheus.NewGoCollector())
+    prometheus.Unregister(prometheus.NewProcessCollector(prometheus.ProcessCollectorOpts{}))
 
     // Setup logrus
     logger.SetFormatter(&logrus.JSONFormatter{})
