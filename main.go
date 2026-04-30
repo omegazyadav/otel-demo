@@ -59,7 +59,6 @@ func init() {
     }))
 }
 
-
 func prometheusMiddleware() gin.HandlerFunc {
     return func(c *gin.Context) {
         start := time.Now()
