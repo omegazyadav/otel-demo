@@ -39,6 +39,10 @@ data:
         scrape_interval: 5s
         static_configs:
           - targets: ['otel-collector:8081']
+    alerting:
+      alertmanagers:
+        - static_configs:
+            - targets: ['alertmanager:9093']
 ---
 apiVersion: v1
 kind: Service
