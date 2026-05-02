@@ -19,6 +19,14 @@ data:
         jsonData:
           httpMethod: POST
           prometheusType: Prometheus
+      - name: VictoriaMetrics
+        type: prometheus
+        access: proxy
+        url: http://victoria-metrics.default.svc.cluster.local:8428
+        isDefault: false
+        jsonData:
+          httpMethod: POST
+          prometheusType: VictoriaMetrics
 ---
 apiVersion: v1
 kind: ConfigMap
@@ -80,4 +88,3 @@ spec:
         - name: grafana-config
           configMap:
             name: grafana-config
-
