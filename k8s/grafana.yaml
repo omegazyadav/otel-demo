@@ -11,14 +11,6 @@ data:
         access: proxy
         url: http://loki.default.svc.cluster.local:3100
         isDefault: true
-      - name: Prometheus
-        type: prometheus
-        access: proxy
-        url: http://prometheus.default.svc.cluster.local:9090
-        isDefault: false
-        jsonData:
-          httpMethod: POST
-          prometheusType: Prometheus
       - name: VictoriaMetrics
         type: prometheus
         access: proxy
