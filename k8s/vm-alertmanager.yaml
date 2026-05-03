@@ -85,3 +85,56 @@ spec:
       targetPort: 9093
   type: ClusterIP
 
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: prometheus-rules
+data:
+  alert-rules.yaml: |
+    groups:
+      - name: example-alerts
+        rules:
+          - alert: NoteAppRequestDuration
+            expr: rate(note_app_request_duration_seconds_bucket{job="otel-collector"}[1m]) > 0.1
+            for: 1m
+            labels:
+              severity: warning
+            annotations:
+              summary: "Note App HTTP Request Duration"
+              description: "The HTTP request duration for the Note App has exceeded 0.1 seconds for the last minute."
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: vmalert
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: vmalert
+  template:
+    metadata:
+      labels:
+        app: vmalert
+    spec:
+      containers:
+        - name: vmalert
+          image: victoriametrics/vmalert:v1.101.0
+          args:
+            # Point to your rules file
+            - "-rule=/etc/prometheus/alert-rules.yaml"
+            # Where to get the data (VictoriaMetrics service)
+            - "-datasource.url=http://victoria-metrics:8428"
+            # Where to send the alerts (Your existing Alertmanager)
+            - "-notifier.url=http://alertmanager:9093"
+            # Allow remote-write for alert state (Optional)
+            - "-remoteWrite.url=http://victoria-metrics:8428"
+          volumeMounts:
+            - name: prometheus-rules
+              mountPath: /etc/prometheus/alert-rules.yaml
+              subPath: alert-rules.yaml
+      volumes:
+        - name: prometheus-rules
+          configMap:
+            name: prometheus-rules # Reuse your existing rules ConfigMap
