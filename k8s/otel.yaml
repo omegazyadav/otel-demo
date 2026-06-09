@@ -19,10 +19,34 @@ data:
               static_configs:
                 - targets: ['otel-demo:8080']
 
+            - job_name: 'argo-server'
+              scrape_interval: 15s
+              scheme: https
+              tls_config:
+                insecure_skip_verify: true
+              static_configs:
+                - targets: ['argo-server.argo.svc.cluster.local:2746']
+
+            - job_name: 'argo-workflow-controller'
+              scrape_interval: 15s
+              scheme: https
+              tls_config:
+                insecure_skip_verify: true
+              static_configs:
+                - targets: ['workflow-controller-metrics.argo.svc.cluster.local:9090']
+
+    processors:
+      filter/drop_unwanted:
+        error_mode: ignore
+        metrics:
+          metric:
+            - 'IsMatch(name, "^grpc_.*")'
+            - 'IsMatch(name, "^gc_.*")'
+            - 'IsMatch(name, "^go_.*")'
+
     exporters:
       prometheus:
         endpoint: "0.0.0.0:8081"
-      # Ensure the debug exporter is here to catch the traces
       debug:
         verbosity: detailed
 
@@ -30,12 +54,11 @@ data:
       pipelines:
         metrics:
           receivers: [prometheus, otlp]
+          processors: [filter/drop_unwanted]
           exporters: [prometheus]
-        # The new pipeline to catch your Go app's trace data
         traces:
           receivers: [otlp]
           exporters: [debug]
-
 
 ---
 apiVersion: apps/v1
