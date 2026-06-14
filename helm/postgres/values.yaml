@@ -1,0 +1,13 @@
+postgres:
+  auth:
+    enablePostgresUser: true
+    postgresPassword: "password"
+    username: "user"
+    password: "password"
+    database: "notesdb"
+  primary:
+    persistence:
+      enabled: false
+    service:
+      ports:
+        postgresql: 5432
